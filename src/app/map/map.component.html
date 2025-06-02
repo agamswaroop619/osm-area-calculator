@@ -1,12 +1,24 @@
-<div class="map-container">
+<div class="map-container" (click)="onClickOutside($event)">
   <div class="search-container">
     <input 
       type="text" 
       [(ngModel)]="searchQuery" 
       placeholder="Search location..."
+      (keyup)="onSearchInput()"
       (keyup.enter)="onSearch()"
     >
     <button (click)="onSearch()">Search</button>
+    
+    <!-- Autocomplete suggestions -->
+    <div class="suggestions-container" *ngIf="showSuggestions && searchResults.length > 0">
+      <div 
+        class="suggestion-item" 
+        *ngFor="let result of searchResults"
+        (click)="selectLocation(result)"
+      >
+        {{ result.display_name }}
+      </div>
+    </div>
   </div>
   <div id="map"></div>
 </div>
