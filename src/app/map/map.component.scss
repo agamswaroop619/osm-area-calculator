@@ -2,56 +2,129 @@
   position: relative;
   height: 100vh;
   width: 100%;
+  display: flex;
+}
+
+.sidebar {
+  width: 300px;
+  height: 100%;
+  background-color: white;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+
+  h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 15px;
+}
+
+.tool-section {
+  margin-bottom: 20px;
+
+  h4 {
+    margin: 0 0 10px 0;
+    color: #495057;
+    font-size: 1rem;
+  }
+}
+
+.drawing-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tool-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+  }
+
+  i {
+    font-size: 1rem;
+    color: #495057;
+  }
 }
 
 .map-container {
+  flex: 1;
   height: 100%;
-  width: 100%;
   z-index: 1;
 }
 
 .search-container {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  z-index: 1000;
-  width: 300px;
+  width: 100%;
 }
 
 .search-container input {
   width: 100%;
   padding: 8px;
   border-radius: 4px;
-  border: 1px solid #ccc;
+  border: 1px solid #dee2e6;
+  font-size: 0.9rem;
+
+  &:focus {
+    outline: none;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+  }
 }
 
 .search-suggestions {
   background: white;
-  border: 1px solid #ccc;
+  border: 1px solid #dee2e6;
   border-top: none;
   max-height: 200px;
   overflow-y: auto;
   list-style: none;
   margin: 0;
   padding: 0;
+  border-radius: 0 0 4px 4px;
 }
 
 .search-suggestions li {
   padding: 8px;
   cursor: pointer;
-}
+  font-size: 0.9rem;
 
-.search-suggestions li:hover {
-  background: #f0f0f0;
+  &:hover {
+    background: #f8f9fa;
+  }
 }
 
 .measurement-box {
-  position: absolute;
-  bottom: 20px;
-  left: 15px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px 15px;
-  border-radius: 6px;
-  z-index: 1000;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+
+  p {
+    margin: 5px 0;
+    font-size: 0.9rem;
+  }
 }

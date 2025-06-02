@@ -23,6 +23,7 @@ export class MapComponent implements OnInit {
   private map!: L.Map;
   private drawnItems = new L.FeatureGroup();
   private debounceTimer: any;
+  private drawControl!: L.Control.Draw;
 
   searchQuery = '';
   searchResults: SearchResult[] = [];
@@ -43,7 +44,8 @@ export class MapComponent implements OnInit {
 
     this.map.addLayer(this.drawnItems);
 
-    const drawControl = new L.Control.Draw({
+    this.drawControl = new L.Control.Draw({
+      position: 'topright',
       draw: {
         marker: false,
         circlemarker: false,
@@ -53,7 +55,9 @@ export class MapComponent implements OnInit {
           allowIntersection: false,
           showArea: true
         },
-        rectangle: {}
+        rectangle: {
+          showArea: true
+        }
       },
       edit: {
         featureGroup: this.drawnItems,
@@ -61,7 +65,7 @@ export class MapComponent implements OnInit {
       }
     });
 
-    this.map.addControl(drawControl);
+    this.map.addControl(this.drawControl);
 
     this.map.on(L.Draw.Event.CREATED, (e: any) => {
       const layer = e.layer;
@@ -149,5 +153,22 @@ export class MapComponent implements OnInit {
 
   formatPerimeter(meters: number): string {
     return meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${meters.toFixed(2)} m`;
+  }
+
+  startDrawingPolygon(): void {
+    // @ts-ignore - Leaflet types don't include _toolbars
+    const polygonButton = this.drawControl._toolbars.draw._modes.polygon.handler;
+    polygonButton.enable();
+  }
+
+  startDrawingRectangle(): void {
+    // @ts-ignore - Leaflet types don't include _toolbars
+    const rectangleButton = this.drawControl._toolbars.draw._modes.rectangle.handler;
+    rectangleButton.enable();
+  }
+
+  clearDrawings(): void {
+    this.drawnItems.clearLayers();
+    this.currentMeasurement = null;
   }
 }
