@@ -113,7 +113,7 @@ export class MapComponent implements OnInit {
     this.debounceTimer = setTimeout(() => this.fetchSearchResults(), 300);
   }
 
-  private fetchSearchResults(): void {
+  public fetchSearchResults(): void {
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}`;
     fetch(url)
       .then(res => res.json())
