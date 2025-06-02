@@ -49,7 +49,7 @@ export class MapComponent implements OnInit {
         circlemarker: false,
         circle: false,
         polyline: false,
-        rectangle: true,
+        rectangle: {},
         polygon: {
           allowIntersection: false,
           showArea: true
