@@ -20,5 +20,19 @@
       </div>
     </div>
   </div>
+
+  <!-- Measurement Panel -->
+  <div class="measurement-panel" *ngIf="currentMeasurement">
+    <h3>Area Measurements</h3>
+    <div class="measurement-item">
+      <span class="label">Area:</span>
+      <span class="value">{{ formatMeasurement(currentMeasurement.area) }}</span>
+    </div>
+    <div class="measurement-item">
+      <span class="label">Perimeter:</span>
+      <span class="value">{{ formatDistance(currentMeasurement.perimeter) }}</span>
+    </div>
+  </div>
+
   <div id="map"></div>
 </div>
