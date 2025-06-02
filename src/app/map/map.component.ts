@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet-geometryutil';
@@ -22,12 +22,7 @@ interface AreaMeasurement {
 export class MapComponent implements OnInit {
   private map!: L.Map;
   private drawnItems = new L.FeatureGroup();
-  private debounceTimer: any;
   private drawControl!: L.Control.Draw;
-
-  searchQuery = '';
-  searchResults: SearchResult[] = [];
-  showSuggestions = false;
   currentMeasurement: AreaMeasurement | null = null;
 
   constructor() {}
@@ -103,46 +98,12 @@ export class MapComponent implements OnInit {
     }
   }
 
-  onSearchInput(): void {
-    clearTimeout(this.debounceTimer);
-    if (this.searchQuery.length < 3) {
-      this.searchResults = [];
-      this.showSuggestions = false;
-      return;
-    }
-    this.debounceTimer = setTimeout(() => this.fetchSearchResults(), 300);
-  }
-
-  public fetchSearchResults(): void {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}`;
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        this.searchResults = data;
-        this.showSuggestions = true;
-      })
-      .catch(err => {
-        console.error('Nominatim search error:', err);
-        this.searchResults = [];
-        this.showSuggestions = false;
-      });
-  }
-
   selectLocation(result: SearchResult): void {
-    this.searchQuery = result.display_name;
-    this.showSuggestions = false;
-
     const lat = parseFloat(result.lat);
     const lon = parseFloat(result.lon);
 
     this.map.setView([lat, lon], 16);
     L.marker([lat, lon]).addTo(this.map);
-  }
-
-  onClickOutsideSuggestions(event: MouseEvent): void {
-    if (!(event.target as HTMLElement).closest('.search-container')) {
-      this.showSuggestions = false;
-    }
   }
 
   formatArea(value: number): string {

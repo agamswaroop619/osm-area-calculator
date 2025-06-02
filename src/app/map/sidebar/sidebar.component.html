@@ -1,0 +1,152 @@
+<div class="sidebar" id="sidebar">
+  <!-- Header -->
+  <div class="sidebar-header">
+    <div class="city-logo">
+      <svg viewBox="0 0 100 100">
+        <path d="M50 10 L65 40 L95 40 L70 60 L85 90 L50 70 L15 90 L30 60 L5 40 L35 40 Z"
+              stroke="#2c3e50" stroke-width="2" fill="none"/>
+      </svg>
+    </div>
+    <div class="header-content">
+      <h1 class="header-title">Infrastructure Dashboard</h1>
+      <p class="header-subtitle">City of Sderot</p>
+    </div>
+    <button class="header-settings" title="Settings">
+      <i class="fas fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- Layers Section -->
+  <div class="section-header"><i class="fas fa-layer-group"></i> Information Layers</div>
+  <div class="section-content">
+    <div class="layer-section" *ngFor="let layer of [
+      {id:'streetLights',icon:'fa-lightbulb',label:'Street Lighting'},
+      {id:'electrical',icon:'fa-bolt',label:'Electrical Cabinets'},
+      {id:'cellular',icon:'fa-signal',label:'5G Infrastructure'},
+      {id:'solar',icon:'fa-solar-panel',label:'Solar Sites'},
+      {id:'storage',icon:'fa-battery-full',label:'Storage Systems'},
+      {id:'cameras',icon:'fa-video',label:'Security Cameras'},
+      {id:'sensors',icon:'fa-microchip',label:'Noise & Air Quality Sensors'}
+    ]">
+      <div class="layer-toggle">
+        <input type="checkbox" id="{{layer.id}}" checked>
+        <label for="{{layer.id}}">
+          <span class="layer-icon"><i class="fas {{layer.icon}}"></i></span>
+          {{layer.label}}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Analysis Section -->
+  <div class="section-header"><i class="fas fa-chart-line"></i> Data Analysis Layers</div>
+  <div class="section-content">
+    <div class="analysis-section">
+      <div class="analysis-toggle">
+        <label><i class="fas fa-fire" style="color: #dc3545;"></i> Electrical Status Heatmap</label>
+        <input type="checkbox">
+      </div>
+      <div class="analysis-toggle">
+        <label><i class="fas fa-fire" style="color: #ff6b6b;"></i> Energy Consumption Heatmap</label>
+        <input type="checkbox">
+      </div>
+      <div class="analysis-control">
+        <label>Heat Map Intensity</label>
+        <input type="range" min="0.1" max="1" step="0.1" value="0.6">
+        <div class="intensity-value">60%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-section">
+    <h3>Search</h3>
+    <div class="search-group">
+      <div class="search-input-wrapper">
+        <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()" placeholder="Search location...">
+        <button class="search-btn" (click)="fetchSearchResults()"><i class="fas fa-search"></i></button>
+      </div>
+      <ul *ngIf="showSuggestions" class="search-results">
+        <li class="search-result-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
+          <span class="search-result-icon"><i class="fas fa-map-marker-alt"></i></span>
+          <div class="search-result-info">
+            <div class="search-result-title">{{ result.display_name }}</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-section">
+    <h3>Filters</h3>
+    <div class="filter-group">
+      <label for="neighborhoodFilter">Neighborhood</label>
+      <select id="neighborhoodFilter">
+        <option value="">All Neighborhoods</option>
+        <option>City Center</option>
+        <option>Ne'ot Eshkol</option>
+        <option>Neveh Eshkol</option>
+        <option>Shapira</option>
+        <option>Industrial Zone</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="statusFilter">Status</label>
+      <select id="statusFilter">
+        <option value="">All Statuses</option>
+        <option>Active</option>
+        <option>Needs Attention</option>
+        <option>Fault</option>
+        <option>Inactive</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Public Infrastructure</label>
+      <div class="multi-select-container">
+        <div class="multi-select-item" *ngFor="let item of ['Schools','Kindergartens','Municipality Offices','Street Lighting','Sports','Community','Library','Health','Shelters','Traffic Lights','Religious','Cemeteries']">
+          <input type="checkbox" id="{{item}}">
+          <label for="{{item}}">{{item}}</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group inline-checkbox">
+      <input type="checkbox" id="problemsOnly">
+      <label for="problemsOnly">Show Problem Areas Only</label>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="stats-panel">
+    <div class="stats-panel-header">
+      <h3>Statistics</h3>
+      <button class="configure-stats-btn">
+        <i class="fas fa-cog"></i> Configure
+      </button>
+    </div>
+    <div id="statsContainer">
+      <div class="stat-item">
+        <span>Total Sensors</span>
+        <span class="stat-value">128</span>
+      </div>
+      <div class="stat-item">
+        <span>Active Lights</span>
+        <span class="stat-value">74%</span>
+      </div>
+      <div class="stat-item">
+        <span>Fault Reports</span>
+        <span class="stat-value">6</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drawing & Measurements -->
+  <div class="section-header"><i class="fas fa-ruler-combined"></i> Drawing & Measurements</div>
+  <div class="section-content">
+    <div class="tool-section">
+      <button (click)="onDrawPolygon()" class="tool-button"><i class="fas fa-draw-polygon"></i> Draw Polygon</button>
+      <button (click)="onDrawRectangle()" class="tool-button"><i class="fas fa-square"></i> Draw Rectangle</button>
+      <button (click)="onClearDrawings()" class="tool-button"><i class="fas fa-trash"></i> Clear All</button>
+    </div>
+  </div>
+</div> 
