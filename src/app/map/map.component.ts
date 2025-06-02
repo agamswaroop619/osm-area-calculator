@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet-draw';
+import 'leaflet-geometryutil';
 
 interface SearchResult {
   display_name: string;
@@ -20,27 +21,26 @@ interface AreaMeasurement {
 })
 export class MapComponent implements OnInit {
   private map!: L.Map;
-  private drawnItems: L.FeatureGroup = new L.FeatureGroup();
-  searchQuery: string = '';
-  searchResults: SearchResult[] = [];
-  showSuggestions: boolean = false;
+  private drawnItems = new L.FeatureGroup();
   private debounceTimer: any;
+
+  searchQuery = '';
+  searchResults: SearchResult[] = [];
+  showSuggestions = false;
   currentMeasurement: AreaMeasurement | null = null;
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     this.initMap();
   }
 
   private initMap(): void {
-    this.map = L.map('map').setView([0, 0], 2);
-
+    this.map = L.map('map').setView([31.524949, 34.596849], 14); // Sderot
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    // Add draw control
     this.map.addLayer(this.drawnItems);
 
     const drawControl = new L.Control.Draw({
@@ -49,11 +49,11 @@ export class MapComponent implements OnInit {
         circlemarker: false,
         circle: false,
         polyline: false,
-        rectangle: {},
         polygon: {
           allowIntersection: false,
           showArea: true
-        }
+        },
+        rectangle: {}
       },
       edit: {
         featureGroup: this.drawnItems,
@@ -63,17 +63,15 @@ export class MapComponent implements OnInit {
 
     this.map.addControl(drawControl);
 
-    // Handle draw events
     this.map.on(L.Draw.Event.CREATED, (e: any) => {
       const layer = e.layer;
       this.drawnItems.addLayer(layer);
-      this.calculateAreaAndPerimeter(layer);
+      this.calculateMeasurement(layer);
     });
 
     this.map.on(L.Draw.Event.EDITED, (e: any) => {
-      const layers = e.layers;
-      layers.eachLayer((layer: any) => {
-        this.calculateAreaAndPerimeter(layer);
+      e.layers.eachLayer((layer: any) => {
+        this.calculateMeasurement(layer);
       });
     });
 
@@ -82,24 +80,21 @@ export class MapComponent implements OnInit {
     });
   }
 
-  private calculateAreaAndPerimeter(layer: L.Layer): void {
+  private calculateMeasurement(layer: L.Layer): void {
     if (layer instanceof L.Polygon) {
       const latlngs = layer.getLatLngs()[0] as L.LatLng[];
-      
-      // Calculate area
+
       const area = L.GeometryUtil.geodesicArea(latlngs);
-      
-      // Calculate perimeter
       let perimeter = 0;
+
       for (let i = 0; i < latlngs.length - 1; i++) {
         perimeter += this.map.distance(latlngs[i], latlngs[i + 1]);
       }
-      // Add distance from last point to first point to complete the perimeter
       perimeter += this.map.distance(latlngs[latlngs.length - 1], latlngs[0]);
 
       this.currentMeasurement = {
-        area: Math.round(area), // in square meters
-        perimeter: Math.round(perimeter) // in meters
+        area: Math.round(area),
+        perimeter: Math.round(perimeter)
       };
     }
   }
@@ -111,23 +106,19 @@ export class MapComponent implements OnInit {
       this.showSuggestions = false;
       return;
     }
-
-    this.debounceTimer = setTimeout(() => {
-      this.fetchSearchResults();
-    }, 300);
+    this.debounceTimer = setTimeout(() => this.fetchSearchResults(), 300);
   }
 
   private fetchSearchResults(): void {
-    const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}`;
-
-    fetch(nominatimUrl)
-      .then(response => response.json())
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchQuery)}`;
+    fetch(url)
+      .then(res => res.json())
       .then(data => {
         this.searchResults = data;
         this.showSuggestions = true;
       })
-      .catch(error => {
-        console.error('Error fetching search results:', error);
+      .catch(err => {
+        console.error('Nominatim search error:', err);
         this.searchResults = [];
         this.showSuggestions = false;
       });
@@ -136,39 +127,27 @@ export class MapComponent implements OnInit {
   selectLocation(result: SearchResult): void {
     this.searchQuery = result.display_name;
     this.showSuggestions = false;
-    
+
     const lat = parseFloat(result.lat);
     const lon = parseFloat(result.lon);
-    this.map.setView([lat, lon], 13);
+
+    this.map.setView([lat, lon], 16);
     L.marker([lat, lon]).addTo(this.map);
   }
 
-  onSearch(): void {
-    if (!this.searchQuery) return;
-    this.fetchSearchResults();
-  }
-
-  onClickOutside(event: MouseEvent): void {
+  onClickOutsideSuggestions(event: MouseEvent): void {
     if (!(event.target as HTMLElement).closest('.search-container')) {
       this.showSuggestions = false;
     }
   }
 
-  formatMeasurement(value: number): string {
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(2)} km²`;
-    } else if (value >= 10000) {
-      return `${(value / 10000).toFixed(2)} ha`;
-    } else {
-      return `${value.toFixed(2)} m²`;
-    }
+  formatArea(value: number): string {
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)} km²`;
+    if (value >= 10_000) return `${(value / 10_000).toFixed(2)} ha`;
+    return `${value.toFixed(2)} m²`;
   }
 
-  formatDistance(meters: number): string {
-    if (meters >= 1000) {
-      return `${(meters / 1000).toFixed(2)} km`;
-    } else {
-      return `${meters.toFixed(2)} m`;
-    }
+  formatPerimeter(meters: number): string {
+    return meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${meters.toFixed(2)} m`;
   }
 }
