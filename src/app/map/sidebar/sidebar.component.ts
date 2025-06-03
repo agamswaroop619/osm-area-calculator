@@ -31,10 +31,12 @@ export class SidebarComponent implements OnInit {
   @Output() drawPolygon = new EventEmitter<AreaStyle>();
   @Output() drawRectangle = new EventEmitter<AreaStyle>();
   @Output() clearDrawings = new EventEmitter<void>();
+  @Output() areaColorChanged = new EventEmitter<{area: AreaMeasurement, style: AreaStyle}>();
 
   searchQuery = '';
   searchResults: SearchResult[] = [];
   showSuggestions = false;
+  selectedArea: AreaMeasurement | null = null;
   private debounceTimer: any;
 
   areaStyles: AreaStyle[] = [
@@ -50,6 +52,15 @@ export class SidebarComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {}
+
+  openColorPicker(area: AreaMeasurement): void {
+    this.selectedArea = this.selectedArea === area ? null : area;
+  }
+
+  updateAreaColor(area: AreaMeasurement, style: AreaStyle): void {
+    this.areaColorChanged.emit({ area, style });
+    this.selectedArea = null;
+  }
 
   onSearchInput(): void {
     clearTimeout(this.debounceTimer);

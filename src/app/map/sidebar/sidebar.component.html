@@ -26,7 +26,7 @@
       <div *ngFor="let area of areaMeasurements" class="area-item">
         <div class="area-header">
           <div class="area-title">
-            <div class="color-dot" [style.background-color]="area.color"></div>
+            <div class="color-dot" [style.background-color]="area.color" (click)="openColorPicker(area)"></div>
             <span>{{ area.name }}</span>
           </div>
           <span class="area-size">{{ formatArea(area.area) }}</span>
@@ -39,6 +39,15 @@
           <div class="measurement">
             <label>Perimeter:</label>
             <span>{{ formatPerimeter(area.perimeter) }}</span>
+          </div>
+          <div class="color-picker" *ngIf="selectedArea === area">
+            <div class="color-options">
+              <div *ngFor="let style of areaStyles" 
+                   class="color-option" 
+                   [style.background-color]="style.color"
+                   (click)="updateAreaColor(area, style)">
+              </div>
+            </div>
           </div>
         </div>
       </div>

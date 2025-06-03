@@ -35,6 +35,7 @@ export class MapComponent implements OnInit {
   private currentStyle: AreaStyle = { color: '#3388ff', name: 'Area 1 (Blue)' };
   private areaCounter = 1;
   areaMeasurements: AreaMeasurement[] = [];
+  private activeDrawHandler: any = null;
 
   constructor() {}
 
@@ -62,6 +63,9 @@ export class MapComponent implements OnInit {
       });
       this.drawnItems.addLayer(layer);
       this.addAreaMeasurement(layer);
+      
+      // Reset active handler after shape is created
+      this.activeDrawHandler = null;
     });
 
     this.map.on(L.Draw.Event.EDITED, (e: any) => {
@@ -80,6 +84,26 @@ export class MapComponent implements OnInit {
         this.areaMeasurements = this.areaMeasurements.filter(m => m.layer !== layer);
       });
     });
+
+    // Handle draw stop event
+    this.map.on(L.Draw.Event.DRAWSTOP, () => {
+      this.activeDrawHandler = null;
+    });
+  }
+
+  updateAreaColor(event: { area: AreaMeasurement, style: AreaStyle }): void {
+    const { area, style } = event;
+    area.color = style.color;
+    
+    // Update the layer style
+    if (area.layer) {
+      (area.layer as L.Path).setStyle({
+        color: style.color,
+        fillColor: style.color,
+        fillOpacity: 0.2,
+        weight: 2
+      });
+    }
   }
 
   private initializeDrawControl(): void {
@@ -173,26 +197,42 @@ export class MapComponent implements OnInit {
   }
 
   startDrawingPolygon(style: AreaStyle): void {
+    // Disable any active drawing handler
+    if (this.activeDrawHandler) {
+      this.activeDrawHandler.disable();
+    }
+
     this.currentStyle = style;
     
     // Remove existing draw control and create a new one with updated colors
-    this.map.removeControl(this.drawControl);
+    if (this.drawControl) {
+      this.map.removeControl(this.drawControl);
+    }
     this.initializeDrawControl();
     
     // @ts-ignore - Leaflet types don't include _toolbars
     const polygonButton = this.drawControl._toolbars.draw._modes.polygon.handler;
+    this.activeDrawHandler = polygonButton;
     polygonButton.enable();
   }
 
   startDrawingRectangle(style: AreaStyle): void {
+    // Disable any active drawing handler
+    if (this.activeDrawHandler) {
+      this.activeDrawHandler.disable();
+    }
+
     this.currentStyle = style;
     
     // Remove existing draw control and create a new one with updated colors
-    this.map.removeControl(this.drawControl);
+    if (this.drawControl) {
+      this.map.removeControl(this.drawControl);
+    }
     this.initializeDrawControl();
     
     // @ts-ignore - Leaflet types don't include _toolbars
     const rectangleButton = this.drawControl._toolbars.draw._modes.rectangle.handler;
+    this.activeDrawHandler = rectangleButton;
     rectangleButton.enable();
   }
 
@@ -200,5 +240,11 @@ export class MapComponent implements OnInit {
     this.drawnItems.clearLayers();
     this.areaMeasurements = [];
     this.areaCounter = 1;
+    
+    // Reset active handler
+    if (this.activeDrawHandler) {
+      this.activeDrawHandler.disable();
+      this.activeDrawHandler = null;
+    }
   }
 }

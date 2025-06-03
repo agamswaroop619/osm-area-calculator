@@ -4,7 +4,8 @@
     (locationSelected)="selectLocation($event)"
     (drawPolygon)="startDrawingPolygon($event)"
     (drawRectangle)="startDrawingRectangle($event)"
-    (clearDrawings)="clearDrawings()">
+    (clearDrawings)="clearDrawings()"
+    (areaColorChanged)="updateAreaColor($event)">
   </app-sidebar>
   <div id="map" class="map-container"></div>
 </div>
