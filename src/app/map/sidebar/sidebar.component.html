@@ -16,10 +16,29 @@
     </button>
   </div>
 
+  <!-- Search -->
+  <div class="search-section">
+    <h3>Search</h3>
+    <div class="search-group">
+      <div class="search-input-wrapper">
+        <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()" placeholder="Search location...">
+        <button class="search-btn" (click)="fetchSearchResults()"><i class="fas fa-search"></i></button>
+      </div>
+      <ul *ngIf="showSuggestions" class="search-results">
+        <li class="search-result-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
+          <span class="search-result-icon"><i class="fas fa-map-marker-alt"></i></span>
+          <div class="search-result-info">
+            <div class="search-result-title">{{ result.display_name }}</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
   <!-- Area Management -->
   <div class="section-header">
     <i class="fas fa-draw-polygon"></i> Area Management
   </div>
+  
   <div class="section-content">
     <!-- Area List -->
     <div class="area-list">
@@ -54,7 +73,7 @@
     </div>
 
     <!-- Drawing Tools -->
-    <div class="area-style-selector">
+    <!-- <div class="area-style-selector">
       <label>Select Area Style:</label>
       <div class="area-style-options">
         <div *ngFor="let style of areaStyles" 
@@ -65,7 +84,7 @@
           <span>{{ style.name }}</span>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="tool-section">
       <button (click)="onDrawPolygon()" class="tool-button">
         <i class="fas fa-draw-polygon"></i> Draw Polygon
@@ -118,25 +137,6 @@
         <input type="range" min="0.1" max="1" step="0.1" value="0.6">
         <div class="intensity-value">60%</div>
       </div>
-    </div>
-  </div>
-
-  <!-- Search -->
-  <div class="search-section">
-    <h3>Search</h3>
-    <div class="search-group">
-      <div class="search-input-wrapper">
-        <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()" placeholder="Search location...">
-        <button class="search-btn" (click)="fetchSearchResults()"><i class="fas fa-search"></i></button>
-      </div>
-      <ul *ngIf="showSuggestions" class="search-results">
-        <li class="search-result-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
-          <span class="search-result-icon"><i class="fas fa-map-marker-alt"></i></span>
-          <div class="search-result-info">
-            <div class="search-result-title">{{ result.display_name }}</div>
-          </div>
-        </li>
-      </ul>
     </div>
   </div>
 
