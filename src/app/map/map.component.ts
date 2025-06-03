@@ -50,38 +50,16 @@ export class MapComponent implements OnInit {
 
     this.map.addLayer(this.drawnItems);
 
-    this.drawControl = new L.Control.Draw({
-      position: 'topright',
-      draw: {
-        marker: false,
-        circlemarker: false,
-        circle: false,
-        polyline: false,
-        polygon: {
-          allowIntersection: false,
-          showArea: true,
-          shapeOptions: {
-            color: this.currentStyle.color
-          }
-        },
-        rectangle: {
-          showArea: true,
-          shapeOptions: {
-            color: this.currentStyle.color
-          }
-        }
-      },
-      edit: {
-        featureGroup: this.drawnItems,
-        remove: true
-      }
-    });
-
-    this.map.addControl(this.drawControl);
+    this.initializeDrawControl();
 
     this.map.on(L.Draw.Event.CREATED, (e: any) => {
       const layer = e.layer;
-      layer.setStyle({ color: this.currentStyle.color });
+      layer.setStyle({ 
+        color: this.currentStyle.color,
+        fillColor: this.currentStyle.color,
+        fillOpacity: 0.2,
+        weight: 2
+      });
       this.drawnItems.addLayer(layer);
       this.addAreaMeasurement(layer);
     });
@@ -102,6 +80,44 @@ export class MapComponent implements OnInit {
         this.areaMeasurements = this.areaMeasurements.filter(m => m.layer !== layer);
       });
     });
+  }
+
+  private initializeDrawControl(): void {
+    const drawOptions: L.Control.DrawConstructorOptions = {
+      position: 'topright' as L.ControlPosition,
+      draw: {
+        marker: false,
+        circlemarker: false,
+        circle: false,
+        polyline: false,
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          shapeOptions: {
+            color: this.currentStyle.color,
+            fillColor: this.currentStyle.color,
+            fillOpacity: 0.2,
+            weight: 2
+          }
+        },
+        rectangle: {
+          showArea: true,
+          shapeOptions: {
+            color: this.currentStyle.color,
+            fillColor: this.currentStyle.color,
+            fillOpacity: 0.2,
+            weight: 2
+          }
+        }
+      },
+      edit: {
+        featureGroup: this.drawnItems,
+        remove: true
+      }
+    };
+
+    this.drawControl = new L.Control.Draw(drawOptions);
+    this.map.addControl(this.drawControl);
   }
 
   private calculateMeasurement(layer: L.Layer): { area: number; perimeter: number } {
@@ -158,14 +174,11 @@ export class MapComponent implements OnInit {
 
   startDrawingPolygon(style: AreaStyle): void {
     this.currentStyle = style;
-    // Update the draw control options with the new color
-    (this.drawControl as any).setDrawingOptions({
-      polygon: {
-        shapeOptions: {
-          color: style.color
-        }
-      }
-    });
+    
+    // Remove existing draw control and create a new one with updated colors
+    this.map.removeControl(this.drawControl);
+    this.initializeDrawControl();
+    
     // @ts-ignore - Leaflet types don't include _toolbars
     const polygonButton = this.drawControl._toolbars.draw._modes.polygon.handler;
     polygonButton.enable();
@@ -173,14 +186,11 @@ export class MapComponent implements OnInit {
 
   startDrawingRectangle(style: AreaStyle): void {
     this.currentStyle = style;
-    // Update the draw control options with the new color
-    (this.drawControl as any).setDrawingOptions({
-      rectangle: {
-        shapeOptions: {
-          color: style.color
-        }
-      }
-    });
+    
+    // Remove existing draw control and create a new one with updated colors
+    this.map.removeControl(this.drawControl);
+    this.initializeDrawControl();
+    
     // @ts-ignore - Leaflet types don't include _toolbars
     const rectangleButton = this.drawControl._toolbars.draw._modes.rectangle.handler;
     rectangleButton.enable();
