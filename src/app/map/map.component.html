@@ -1,8 +1,9 @@
 <div class="map-wrapper">
   <app-sidebar
+    [areaMeasurements]="areaMeasurements"
     (locationSelected)="selectLocation($event)"
-    (drawPolygon)="startDrawingPolygon()"
-    (drawRectangle)="startDrawingRectangle()"
+    (drawPolygon)="startDrawingPolygon($event)"
+    (drawRectangle)="startDrawingRectangle($event)"
     (clearDrawings)="clearDrawings()">
   </app-sidebar>
   <div id="map" class="map-container"></div>

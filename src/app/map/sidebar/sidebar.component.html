@@ -16,6 +16,60 @@
     </button>
   </div>
 
+  <!-- Area Management -->
+  <div class="section-header">
+    <i class="fas fa-draw-polygon"></i> Area Management
+  </div>
+  <div class="section-content">
+    <!-- Area List -->
+    <div class="area-list">
+      <div *ngFor="let area of areaMeasurements" class="area-item">
+        <div class="area-header">
+          <div class="area-title">
+            <div class="color-dot" [style.background-color]="area.color"></div>
+            <span>{{ area.name }}</span>
+          </div>
+          <span class="area-size">{{ formatArea(area.area) }}</span>
+        </div>
+        <div class="area-details">
+          <div class="measurement">
+            <label>Area:</label>
+            <span>{{ formatArea(area.area) }}</span>
+          </div>
+          <div class="measurement">
+            <label>Perimeter:</label>
+            <span>{{ formatPerimeter(area.perimeter) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawing Tools -->
+    <div class="area-style-selector">
+      <label>Select Area Style:</label>
+      <div class="area-style-options">
+        <div *ngFor="let style of areaStyles" 
+             class="area-style-option" 
+             [class.selected]="selectedAreaStyle === style"
+             (click)="setSelectedAreaStyle(style)">
+          <div class="color-preview" [style.background-color]="style.color"></div>
+          <span>{{ style.name }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="tool-section">
+      <button (click)="onDrawPolygon()" class="tool-button">
+        <i class="fas fa-draw-polygon"></i> Draw Polygon
+      </button>
+      <button (click)="onDrawRectangle()" class="tool-button">
+        <i class="fas fa-square"></i> Draw Rectangle
+      </button>
+      <button (click)="onClearDrawings()" class="tool-button">
+        <i class="fas fa-trash"></i> Clear All
+      </button>
+    </div>
+  </div>
+
   <!-- Layers Section -->
   <div class="section-header"><i class="fas fa-layer-group"></i> Information Layers</div>
   <div class="section-content">
@@ -137,16 +191,6 @@
         <span>Fault Reports</span>
         <span class="stat-value">6</span>
       </div>
-    </div>
-  </div>
-
-  <!-- Drawing & Measurements -->
-  <div class="section-header"><i class="fas fa-ruler-combined"></i> Drawing & Measurements</div>
-  <div class="section-content">
-    <div class="tool-section">
-      <button (click)="onDrawPolygon()" class="tool-button"><i class="fas fa-draw-polygon"></i> Draw Polygon</button>
-      <button (click)="onDrawRectangle()" class="tool-button"><i class="fas fa-square"></i> Draw Rectangle</button>
-      <button (click)="onClearDrawings()" class="tool-button"><i class="fas fa-trash"></i> Clear All</button>
     </div>
   </div>
 </div> 

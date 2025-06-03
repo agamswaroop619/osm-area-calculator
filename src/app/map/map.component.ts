@@ -10,8 +10,17 @@ interface SearchResult {
 }
 
 interface AreaMeasurement {
+  id: string;
+  name: string;
   area: number;
   perimeter: number;
+  color: string;
+  layer: L.Layer;
+}
+
+interface AreaStyle {
+  color: string;
+  name: string;
 }
 
 @Component({
@@ -23,7 +32,9 @@ export class MapComponent implements OnInit {
   private map!: L.Map;
   private drawnItems = new L.FeatureGroup();
   private drawControl!: L.Control.Draw;
-  currentMeasurement: AreaMeasurement | null = null;
+  private currentStyle: AreaStyle = { color: '#3388ff', name: 'Area 1 (Blue)' };
+  private areaCounter = 1;
+  areaMeasurements: AreaMeasurement[] = [];
 
   constructor() {}
 
@@ -48,10 +59,16 @@ export class MapComponent implements OnInit {
         polyline: false,
         polygon: {
           allowIntersection: false,
-          showArea: true
+          showArea: true,
+          shapeOptions: {
+            color: this.currentStyle.color
+          }
         },
         rectangle: {
-          showArea: true
+          showArea: true,
+          shapeOptions: {
+            color: this.currentStyle.color
+          }
         }
       },
       edit: {
@@ -64,22 +81,30 @@ export class MapComponent implements OnInit {
 
     this.map.on(L.Draw.Event.CREATED, (e: any) => {
       const layer = e.layer;
+      layer.setStyle({ color: this.currentStyle.color });
       this.drawnItems.addLayer(layer);
-      this.calculateMeasurement(layer);
+      this.addAreaMeasurement(layer);
     });
 
     this.map.on(L.Draw.Event.EDITED, (e: any) => {
       e.layers.eachLayer((layer: any) => {
-        this.calculateMeasurement(layer);
+        const measurement = this.areaMeasurements.find(m => m.layer === layer);
+        if (measurement) {
+          const { area, perimeter } = this.calculateMeasurement(layer);
+          measurement.area = area;
+          measurement.perimeter = perimeter;
+        }
       });
     });
 
-    this.map.on(L.Draw.Event.DELETED, () => {
-      this.currentMeasurement = null;
+    this.map.on(L.Draw.Event.DELETED, (e: any) => {
+      e.layers.eachLayer((layer: any) => {
+        this.areaMeasurements = this.areaMeasurements.filter(m => m.layer !== layer);
+      });
     });
   }
 
-  private calculateMeasurement(layer: L.Layer): void {
+  private calculateMeasurement(layer: L.Layer): { area: number; perimeter: number } {
     if (layer instanceof L.Polygon) {
       const latlngs = layer.getLatLngs()[0] as L.LatLng[];
 
@@ -91,11 +116,26 @@ export class MapComponent implements OnInit {
       }
       perimeter += this.map.distance(latlngs[latlngs.length - 1], latlngs[0]);
 
-      this.currentMeasurement = {
+      return {
         area: Math.round(area),
         perimeter: Math.round(perimeter)
       };
     }
+    return { area: 0, perimeter: 0 };
+  }
+
+  private addAreaMeasurement(layer: L.Layer): void {
+    const { area, perimeter } = this.calculateMeasurement(layer);
+    const areaNumber = this.areaCounter++;
+    const measurement: AreaMeasurement = {
+      id: `area-${areaNumber}`,
+      name: `Area ${areaNumber}`,
+      area,
+      perimeter,
+      color: this.currentStyle.color,
+      layer
+    };
+    this.areaMeasurements.push(measurement);
   }
 
   selectLocation(result: SearchResult): void {
@@ -116,13 +156,31 @@ export class MapComponent implements OnInit {
     return meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${meters.toFixed(2)} m`;
   }
 
-  startDrawingPolygon(): void {
+  startDrawingPolygon(style: AreaStyle): void {
+    this.currentStyle = style;
+    // Update the draw control options with the new color
+    (this.drawControl as any).setDrawingOptions({
+      polygon: {
+        shapeOptions: {
+          color: style.color
+        }
+      }
+    });
     // @ts-ignore - Leaflet types don't include _toolbars
     const polygonButton = this.drawControl._toolbars.draw._modes.polygon.handler;
     polygonButton.enable();
   }
 
-  startDrawingRectangle(): void {
+  startDrawingRectangle(style: AreaStyle): void {
+    this.currentStyle = style;
+    // Update the draw control options with the new color
+    (this.drawControl as any).setDrawingOptions({
+      rectangle: {
+        shapeOptions: {
+          color: style.color
+        }
+      }
+    });
     // @ts-ignore - Leaflet types don't include _toolbars
     const rectangleButton = this.drawControl._toolbars.draw._modes.rectangle.handler;
     rectangleButton.enable();
@@ -130,6 +188,7 @@ export class MapComponent implements OnInit {
 
   clearDrawings(): void {
     this.drawnItems.clearLayers();
-    this.currentMeasurement = null;
+    this.areaMeasurements = [];
+    this.areaCounter = 1;
   }
 }
